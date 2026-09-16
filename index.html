@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Petualangan Pecahan SD Kelas 5</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        h1, h2, h3, .font-fredoka {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+        /* Style Pecahan Matematika Visual */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-weight: 700;
+            padding: 0 4px;
+        }
+        .frac .top {
+            border-bottom: 2px solid currentColor;
+            padding-bottom: 1px;
+            line-height: 1.1;
+        }
+        .frac .bottom {
+            padding-top: 1px;
+            line-height: 1.1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/20 p-2 rounded-2xl backdrop-blur-md">
+                    <i class="fa-solid fa-brain text-2xl text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-wide">Kuis Petualangan Pecahan</h1>
+                    <p class="text-xs text-indigo-100">30 Soal Penjumlahan & Pengurangan Pecahan Berpenyebut Beda</p>
+                </div>
+            </div>
+
+            <!-- Auto-save Status Indicator -->
+            <div class="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                <i class="fa-solid fa-cloud-arrow-up text-emerald-300 animate-pulse"></i>
+                <span id="save-status">Tersimpan Otomatis</span>
+            </div>
+        </div>
+
+        <!-- Top Progress Bar -->
+        <div class="w-full bg-indigo-950/40 h-2">
+            <div id="top-progress-bar" class="bg-yellow-400 h-2 transition-all duration-300 w-0"></div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto w-full px-4 py-6 flex-grow grid md:grid-cols-3 gap-6">
+
+        <!-- Left / Navigation Panel (1/3 width on desktop) -->
+        <div class="md:col-span-1 space-y-4">
+            <!-- Score & Progress Summary Box -->
+            <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-bold text-slate-700 text-sm flex items-center">
+                        <i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i> Progres Kuis
+                    </h2>
+                    <button onclick="confirmResetQuiz()" class="text-xs text-rose-500 hover:text-rose-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+                        <span class="text-xs text-indigo-600 font-bold block">Terjawab</span>
+                        <span id="stat-answered" class="text-xl font-black text-indigo-900">0 / 30</span>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                        <span class="text-xs text-emerald-600 font-bold block">Skor Saat Ini</span>
+                        <span id="stat-score" class="text-xl font-black text-emerald-700">0</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Grid (1 - 30) -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-500">Navigasi Soal:</span>
+                        <span class="text-[10px] text-slate-400">Klik angka untuk berpindah</span>
+                    </div>
+                    <div id="nav-grid" class="grid grid-cols-6 gap-1.5 max-h-64 overflow-y-auto p-1">
+                        <!-- 30 Dynamic Buttons generated via JS -->
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] font-semibold text-slate-600">
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span> Benar</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-rose-500 rounded-full inline-block"></span> Salah</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-indigo-600 rounded-full inline-block"></span> Sedang Dibuka</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-slate-200 rounded-full inline-block"></span> Belum Diisi</div>
+                </div>
+            </div>
+
+            <!-- Finish Quiz Button -->
+            <button onclick="finishQuiz()" class="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm rounded-2xl shadow-md transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-flag-checkered text-yellow-300"></i>
+                <span>Selesaikan & Lihat Rekap</span>
+            </button>
+        </div>
+
+        <!-- Right / Question Panel (2/3 width on desktop) -->
+        <div class="md:col-span-2 space-y-4">
+            
+            <!-- Question Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6 relative">
+                
+                <!-- Question Header -->
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                    <span id="question-badge" class="px-3.5 py-1.5 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl">
+                        Soal Nomor 1
+                    </span>
+                    <span id="question-type-tag" class="text-xs font-semibold text-slate-400">
+                        Penjumlahan Pecahan
+                    </span>
+                </div>
+
+                <!-- Question Prompt -->
+                <div class="space-y-3">
+                    <p class="text-sm text-slate-500 font-medium">Hitunglah dan pilih jawaban dalam <strong class="text-indigo-600">bentuk paling sederhana</strong>:</p>
+                    <div id="question-text" class="text-2xl sm:text-3xl font-bold text-slate-800 py-3 text-center bg-slate-50 rounded-2xl border border-slate-100">
+                        <!-- Dynamic Fraction Question Text -->
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div id="options-container" class="grid sm:grid-cols-2 gap-3">
+                    <!-- Dynamic Option Buttons -->
+                </div>
+
+                <!-- Immediate Feedback / Explanation Box -->
+                <div id="explanation-box" class="hidden p-4 sm:p-5 rounded-2xl border text-xs sm:text-sm space-y-2 transition-all">
+                    <!-- Dynamic Explanation Text -->
+                </div>
+
+                <!-- Bottom Question Navigation Controls -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button id="btn-prev" onclick="prevQuestion()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Sebelumnya</span>
+                    </button>
+                    <button id="btn-next" onclick="nextQuestion()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-2 shadow-md">
+                        <span>Selanjutnya</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Final Results Modal -->
+    <div id="results-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 text-center space-y-6 animate-scale-up">
+            <div class="w-20 h-20 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner">
+                <i id="result-icon" class="fa-solid fa-trophy"></i>
+            </div>
+            
+            <div>
+                <h2 id="result-title" class="text-2xl font-bold text-slate-800">Hasil Kuis Petualangan</h2>
+                <p id="result-subtitle" class="text-xs text-slate-500 mt-1">Berikut adalah rekap performa belajarmu hari ini</p>
+            </div>
+
+            <!-- Score Cards Grid -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+                    <span class="text-[10px] text-indigo-600 font-bold uppercase block">Nilai Akhir</span>
+                    <span id="final-score" class="text-2xl font-black text-indigo-700">0</span>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                    <span class="text-[10px] text-emerald-600 font-bold uppercase block">Benar</span>
+                    <span id="final-correct" class="text-2xl font-black text-emerald-600">0</span>
+                </div>
+                <div class="bg-rose-50 p-3 rounded-2xl border border-rose-100">
+                    <span class="text-[10px] text-rose-600 font-bold uppercase block">Salah</span>
+                    <span id="final-wrong" class="text-2xl font-black text-rose-600">0</span>
+                </div>
+            </div>
+
+            <p id="result-message" class="text-xs sm:text-sm text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                Pesan motivasi...
+            </p>
+
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                    Periksa Jawaban
+                </button>
+                <button onclick="resetQuiz()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-md">
+                    Ulangi Kuis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs border-t border-slate-800 mt-6">
+        <p class="font-semibold text-slate-300">Kuis Matematika SD Kelas 5 - Penjumlahan & Pengurangan Pecahan</p>
+    </footer>
+
+    <script>
+        // Array 30 Soal Berpenyebut Beda - Jawaban Sederhana & Opsi Seimbang
+        const quizData = [
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">1</span><span class="bottom">2</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">3</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">5</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">6</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">6</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">6</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (1×3 + 1×2) / (2×3) = (3 + 2) / 6 = <strong>5/6</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">3</span><span class="bottom">4</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">2</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">4</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">2</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">4</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">2</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 4 dan 2 adalah 4. Ubah 1/2 jadi 2/4. Maka 3/4 - 2/4 = <strong>1/4</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">1</span><span class="bottom">4</span></span> + <span class="frac"><span class="top">2</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">9</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">20</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">13</span><span class="bottom">20</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">20</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (1×5 + 2×4) / (4×5) = (5 + 8) / 20 = <strong>13/20</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">5</span><span class="bottom">6</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">3</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">3</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">3</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">6</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">2</span></span>', isCorrect: true }
+                ],
+                explanation: "KPK 6 dan 3 adalah 6. 1/3 = 2/6. Maka 5/6 - 2/6 = 3/6. Disederhanakan dibagi 3 menjadi <strong>1/2</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">2</span><span class="bottom">3</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">8</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">15</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">15</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">13</span><span class="bottom">15</span></span>', isCorrect: true }
+                ],
+                explanation: "Cara Kupu-Kupu: (2×5 + 1×3) / (3×5) = (10 + 3) / 15 = <strong>13/15</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">7</span><span class="bottom">8</span></span> - <span class="frac"><span class="top">3</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">4</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">8</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">8</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">8</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 8 dan 4 adalah 8. 3/4 = 6/8. Maka 7/8 - 6/8 = <strong>1/8</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">3</span><span class="bottom">5</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">2</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">10</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">7</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">9</span><span class="bottom">10</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">10</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (3×2 + 1×5) / (5×2) = (6 + 5) / 10 = <strong>11/10</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">4</span><span class="bottom">5</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">3</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">2</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">15</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">8</span><span class="bottom">15</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">15</span></span>', isCorrect: true }
+                ],
+                explanation: "Cara Kupu-Kupu: (4×3 - 1×5) / (5×3) = (12 - 5) / 15 = <strong>7/15</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">1</span><span class="bottom">6</span></span> + <span class="frac"><span class="top">3</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">10</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">10</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">12</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">12</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 6 dan 4 adalah 12. 1/6 = 2/12 dan 3/4 = 9/12. Hasil = 2/12 + 9/12 = <strong>11/12</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">5</span><span class="bottom">8</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">4</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">8</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">8</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">8</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 8 dan 4 adalah 8. 1/4 = 2/8. Hasil = 5/8 - 2/8 = <strong>3/8</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">2</span><span class="bottom">7</span></span> + <span class="frac"><span class="top">3</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">29</span><span class="bottom">35</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">31</span><span class="bottom">35</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">17</span><span class="bottom">35</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (2×5 + 3×7) / (7×5) = (10 + 21) / 35 = <strong>31/35</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">9</span><span class="bottom">10</span></span> - <span class="frac"><span class="top">2</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">5</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">10</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">10</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">2</span></span>', isCorrect: true }
+                ],
+                explanation: "KPK 10 dan 5 adalah 10. 2/5 = 4/10. Hasil = 9/10 - 4/10 = 5/10. Disederhanakan dibagi 5 menjadi <strong>1/2</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">1</span><span class="bottom">3</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">12</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">7</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">12</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (1×4 + 1×3) / (3×4) = (4 + 3) / 12 = <strong>7/12</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">3</span><span class="bottom">4</span></span> - <span class="frac"><span class="top">2</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">1</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">20</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">20</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">9</span><span class="bottom">20</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (3×5 - 2×4) / (4×5) = (15 - 8) / 20 = <strong>7/20</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">2</span><span class="bottom">5</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">6</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">11</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">13</span><span class="bottom">30</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">17</span><span class="bottom">30</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">30</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (2×6 + 1×5) / (5×6) = (12 + 5) / 30 = <strong>17/30</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">5</span><span class="bottom">6</span></span> - <span class="frac"><span class="top">3</span><span class="bottom">8</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">2</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">24</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">24</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">13</span><span class="bottom">24</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 6 dan 8 adalah 24. 5/6 = 20/24 dan 3/8 = 9/24. Hasil = 20/24 - 9/24 = <strong>11/24</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">3</span><span class="bottom">10</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">2</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">5</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">8</span><span class="bottom">10</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">5</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 10 dan 2 adalah 10. 1/2 = 5/10. Hasil = 3/10 + 5/10 = 8/10. Disederhanakan dibagi 2 menjadi <strong>4/5</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">7</span><span class="bottom">12</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">3</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">6</span><span class="bottom">9</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">4</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">3</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 12 dan 3 adalah 12. 1/3 = 4/12. Hasil = 7/12 - 4/12 = 3/12. Disederhanakan dibagi 3 menjadi <strong>1/4</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">2</span><span class="bottom">9</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">3</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">9</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">9</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">9</span></span>', isCorrect: true }
+                ],
+                explanation: "KPK 9 dan 3 adalah 9. 1/3 = 3/9. Hasil = 2/9 + 3/9 = <strong>5/9</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">4</span><span class="bottom">7</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">2</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">14</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">5</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">14</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">14</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (4×2 - 1×7) / (7×2) = (8 - 7) / 14 = <strong>1/14</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">3</span><span class="bottom">8</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">6</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">14</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">24</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">13</span><span class="bottom">24</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">24</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 8 dan 6 adalah 24. 3/8 = 9/24 dan 1/6 = 4/24. Hasil = 9/24 + 4/24 = <strong>13/24</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">5</span><span class="bottom">9</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">6</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">3</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">18</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">18</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">8</span><span class="bottom">18</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 9 dan 6 adalah 18. 5/9 = 10/18 dan 1/6 = 3/18. Hasil = 10/18 - 3/18 = <strong>7/18</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">1</span><span class="bottom">5</span></span> + <span class="frac"><span class="top">3</span><span class="bottom">7</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">12</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">18</span><span class="bottom">35</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">8</span><span class="bottom">35</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">22</span><span class="bottom">35</span></span>', isCorrect: true }
+                ],
+                explanation: "Cara Kupu-Kupu: (1×7 + 3×5) / (5×7) = (7 + 15) / 35 = <strong>22/35</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">8</span><span class="bottom">15</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">3</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">10</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">15</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">3</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 15 dan 5 adalah 15. 1/5 = 3/15. Hasil = 8/15 - 3/15 = 5/15. Disederhanakan dibagi 5 menjadi <strong>1/3</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">1</span><span class="bottom">2</span></span> + <span class="frac"><span class="top">2</span><span class="bottom">7</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">9</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">9</span><span class="bottom">14</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">14</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">14</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (1×7 + 2×2) / (2×7) = (7 + 4) / 14 = <strong>11/14</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">11</span><span class="bottom">12</span></span> - <span class="frac"><span class="top">3</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">8</span><span class="bottom">8</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">6</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">1</span><span class="bottom">4</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">2</span><span class="bottom">6</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 12 dan 4 adalah 12. 3/4 = 9/12. Hasil = 11/12 - 9/12 = 2/12. Disederhanakan dibagi 2 menjadi <strong>1/6</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">3</span><span class="bottom">5</span></span> + <span class="frac"><span class="top">1</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">17</span><span class="bottom">20</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">4</span><span class="bottom">9</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">20</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">20</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (3×4 + 1×5) / (5×4) = (12 + 5) / 20 = <strong>17/20</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">5</span><span class="bottom">6</span></span> - <span class="frac"><span class="top">2</span><span class="bottom">5</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">3</span><span class="bottom">1</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">30</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">30</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">13</span><span class="bottom">30</span></span>', isCorrect: true }
+                ],
+                explanation: "Cara Kupu-Kupu: (5×5 - 2×6) / (6×5) = (25 - 12) / 30 = <strong>13/30</strong>."
+            },
+            {
+                type: "Penjumlahan",
+                qHtml: '<span class="frac"><span class="top">2</span><span class="bottom">3</span></span> + <span class="frac"><span class="top">3</span><span class="bottom">8</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">5</span><span class="bottom">11</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">19</span><span class="bottom">24</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">25</span><span class="bottom">24</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">17</span><span class="bottom">24</span></span>', isCorrect: false }
+                ],
+                explanation: "Cara Kupu-Kupu: (2×8 + 3×3) / (3×8) = (16 + 9) / 24 = <strong>25/24</strong>."
+            },
+            {
+                type: "Pengurangan",
+                qHtml: '<span class="frac"><span class="top">7</span><span class="bottom">10</span></span> - <span class="frac"><span class="top">1</span><span class="bottom">4</span></span>',
+                options: [
+                    { text: '<span class="frac"><span class="top">9</span><span class="bottom">20</span></span>', isCorrect: true },
+                    { text: '<span class="frac"><span class="top">6</span><span class="bottom">6</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">7</span><span class="bottom">20</span></span>', isCorrect: false },
+                    { text: '<span class="frac"><span class="top">11</span><span class="bottom">20</span></span>', isCorrect: false }
+                ],
+                explanation: "KPK 10 dan 4 adalah 20. 7/10 = 14/20 dan 1/4 = 5/20. Hasil = 14/20 - 5/20 = <strong>9/20</strong>."
+            }
+        ];
+
+        // State Storage Keys
+        const STORAGE_KEY_ANSWERS = "sd5_quiz_pecahan_user_answers";
+        const STORAGE_KEY_CURRENT = "sd5_quiz_pecahan_current_idx";
+
+        // Global State Variables
+        let currentIdx = 0;
+        let userAnswers = {}; // { qIndex: chosenOptionIndex }
+
+        // DOM Elements
+        const navGridEl = document.getElementById('nav-grid');
+        const questionBadgeEl = document.getElementById('question-badge');
+        const questionTypeTagEl = document.getElementById('question-type-tag');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const explanationBoxEl = document.getElementById('explanation-box');
+        const statAnsweredEl = document.getElementById('stat-answered');
+        const statScoreEl = document.getElementById('stat-score');
+        const topProgressBarEl = document.getElementById('top-progress-bar');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        // Initialize App
+        function initApp() {
+            loadState();
+            renderNavGrid();
+            renderQuestion();
+            updateStats();
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY_ANSWERS, JSON.stringify(userAnswers));
+                localStorage.setItem(STORAGE_KEY_CURRENT, currentIdx.toString());
+                
+                const statusEl = document.getElementById('save-status');
+                statusEl.innerText = "Tersimpan Otomatis";
+            } catch (e) {
+                console.error("Storage error:", e);
+            }
+        }
+
+        // Load state from localStorage
+        function loadState() {
+            try {
+                const savedAnswers = localStorage.getItem(STORAGE_KEY_ANSWERS);
+                if (savedAnswers) {
+                    userAnswers = JSON.parse(savedAnswers);
+                }
+                const savedIdx = localStorage.getItem(STORAGE_KEY_CURRENT);
+                if (savedIdx !== null) {
+                    currentIdx = parseInt(savedIdx, 10);
+                    if (isNaN(currentIdx) || currentIdx < 0 || currentIdx >= quizData.length) {
+                        currentIdx = 0;
+                    }
+                }
+            } catch (e) {
+                userAnswers = {};
+                currentIdx = 0;
+            }
+        }
+
+        // Render Nav Grid
+        function renderNavGrid() {
+            navGridEl.innerHTML = '';
+            for (let i = 0; i < quizData.length; i++) {
+                const btn = document.createElement('button');
+                btn.className = getNavBtnClass(i);
+                btn.innerText = i + 1;
+                btn.onclick = () => goToQuestion(i);
+                navGridEl.appendChild(btn);
+            }
+        }
+
+        function getNavBtnClass(idx) {
+            const isCurrent = idx === currentIdx;
+            const hasAnswered = userAnswers.hasOwnProperty(idx);
+            
+            let base = "w-8 h-8 rounded-lg font-bold text-xs transition flex items-center justify-center ";
+
+            if (isCurrent) {
+                base += "ring-2 ring-indigo-600 ring-offset-1 ";
+            }
+
+            if (hasAnswered) {
+                const chosenIdx = userAnswers[idx];
+                const isCorrect = quizData[idx].options[chosenIdx].isCorrect;
+                if (isCorrect) {
+                    return base + "bg-emerald-500 text-white shadow-sm";
+                } else {
+                    return base + "bg-rose-500 text-white shadow-sm";
+                }
+            } else {
+                return base + "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200";
+            }
+        }
+
+        // Render Current Question
+        function renderQuestion() {
+            const q = quizData[currentIdx];
+            
+            questionBadgeEl.innerText = `Soal Nomor ${currentIdx + 1} dari 30`;
+            questionTypeTagEl.innerText = q.type;
+            questionTextEl.innerHTML = q.qHtml;
+
+            // Render Options
+            optionsContainerEl.innerHTML = '';
+            const hasAnswered = userAnswers.hasOwnProperty(currentIdx);
+            const chosenIdx = hasAnswered ? userAnswers[currentIdx] : null;
+
+            const labels = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((opt, optIdx) => {
+                const btn = document.createElement('button');
+                btn.disabled = hasAnswered;
+
+                let optClass = "p-4 rounded-2xl border-2 text-left font-bold transition flex items-center justify-between text-base sm:text-lg ";
+
+                if (hasAnswered) {
+                    if (opt.isCorrect) {
+                        // Correct option styling
+                        optClass += "bg-emerald-50 border-emerald-500 text-emerald-900 ";
+                    } else if (optIdx === chosenIdx && !opt.isCorrect) {
+                        // Chosen incorrect option styling
+                        optClass += "bg-rose-50 border-rose-500 text-rose-900 ";
+                    } else {
+                        // Normal unselected option
+                        optClass += "bg-slate-50 border-slate-200 text-slate-400 opacity-60 ";
+                    }
+                } else {
+                    optClass += "bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-slate-800 shadow-sm ";
+                }
+
+                btn.className = optClass;
+
+                let badgeColor = "bg-slate-100 text-slate-700";
+                if (hasAnswered) {
+                    if (opt.isCorrect) badgeColor = "bg-emerald-500 text-white";
+                    else if (optIdx === chosenIdx) badgeColor = "bg-rose-500 text-white";
+                }
+
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-xl ${badgeColor} flex items-center justify-center text-xs font-black">
+                            ${labels[optIdx]}
+                        </span>
+                        <span>${opt.text}</span>
+                    </div>
+                    ${hasAnswered && opt.isCorrect ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>' : ''}
+                    ${hasAnswered && optIdx === chosenIdx && !opt.isCorrect ? '<i class="fa-solid fa-circle-xmark text-rose-600 text-xl"></i>' : ''}
+                `;
+
+                btn.onclick = () => selectAnswer(optIdx);
+                optionsContainerEl.appendChild(btn);
+            });
+
+            // Explanation Box Handling
+            if (hasAnswered) {
+                const isCorrect = q.options[chosenIdx].isCorrect;
+                explanationBoxEl.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'bg-rose-50', 'border-rose-200', 'text-rose-900');
+
+                if (isCorrect) {
+                    explanationBoxEl.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
+                    explanationBoxEl.innerHTML = `
+                        <div class="font-bold flex items-center gap-1.5 text-emerald-700">
+                            <i class="fa-solid fa-circle-check"></i> Jawaban Kamu Benar! Tepat Sekali!
+                        </div>
+                        <p class="mt-1">${q.explanation}</p>
+                    `;
+                } else {
+                    explanationBoxEl.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900');
+                    explanationBoxEl.innerHTML = `
+                        <div class="font-bold flex items-center gap-1.5 text-rose-700">
+                            <i class="fa-solid fa-circle-xmark"></i> Jawaban Kurang Tepat!
+                        </div>
+                        <p class="mt-1"><strong>Pembahasan:</strong> ${q.explanation}</p>
+                    `;
+                }
+            } else {
+                explanationBoxEl.classList.add('hidden');
+            }
+
+            // Update Navigation Button States
+            btnPrev.disabled = currentIdx === 0;
+            btnPrev.style.opacity = currentIdx === 0 ? "0.5" : "1";
+
+            if (currentIdx === quizData.length - 1) {
+                btnNext.innerHTML = `<span>Rekap Selesai</span> <i class="fa-solid fa-flag-checkered"></i>`;
+            } else {
+                btnNext.innerHTML = `<span>Selanjutnya</span> <i class="fa-solid fa-arrow-right"></i>`;
+            }
+
+            renderNavGrid();
+        }
+
+        // Handle Answer Selection
+        function selectAnswer(optIdx) {
+            if (userAnswers.hasOwnProperty(currentIdx)) return; // Prevent re-answer
+
+            userAnswers[currentIdx] = optIdx;
+            saveState();
+            renderQuestion();
+            updateStats();
+        }
+
+        // Navigation Functions
+        function goToQuestion(idx) {
+            if (idx >= 0 && idx < quizData.length) {
+                currentIdx = idx;
+                saveState();
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                saveState();
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIdx < quizData.length - 1) {
+                currentIdx++;
+                saveState();
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        // Update Progress & Score Stats
+        function updateStats() {
+            const answeredCount = Object.keys(userAnswers).length;
+            let correctCount = 0;
+
+            Object.keys(userAnswers).forEach(idxStr => {
+                const qIdx = parseInt(idxStr, 10);
+                const chosenIdx = userAnswers[qIdx];
+                if (quizData[qIdx].options[chosenIdx].isCorrect) {
+                    correctCount++;
+                }
+            });
+
+            // Calculate Score (Max 100)
+            const score = Math.round((correctCount / quizData.length) * 100);
+
+            statAnsweredEl.innerText = `${answeredCount} / ${quizData.length}`;
+            statScoreEl.innerText = score;
+
+            // Top progress bar width
+            const pct = Math.round((answeredCount / quizData.length) * 100);
+            topProgressBarEl.style.width = `${pct}%`;
+        }
+
+        // Finish Quiz & Show Results Modal
+        function finishQuiz() {
+            const answeredCount = Object.keys(userAnswers).length;
+            let correctCount = 0;
+
+            Object.keys(userAnswers).forEach(idxStr => {
+                const qIdx = parseInt(idxStr, 10);
+                const chosenIdx = userAnswers[qIdx];
+                if (quizData[qIdx].options[chosenIdx].isCorrect) {
+                    correctCount++;
+                }
+            });
+
+            const wrongCount = answeredCount - correctCount;
+            const finalScore = Math.round((correctCount / quizData.length) * 100);
+
+            document.getElementById('final-score').innerText = finalScore;
+            document.getElementById('final-correct').innerText = correctCount;
+            document.getElementById('final-wrong').innerText = wrongCount;
+
+            const iconEl = document.getElementById('result-icon');
+            const titleEl = document.getElementById('result-title');
+            const msgEl = document.getElementById('result-message');
+
+            if (finalScore >= 85) {
+                iconEl.className = "fa-solid fa-crown text-yellow-500";
+                titleEl.innerText = "Luar Biasa! Master Pecahan! ⭐⭐⭐";
+                msgEl.innerText = "Selamat! Kamu sudah sangat menguasai penjumlahan dan pengurangan pecahan berpenyebut beda!";
+            } else if (finalScore >= 65) {
+                iconEl.className = "fa-solid fa-star text-amber-500";
+                titleEl.innerText = "Hebat! Hasil Memuaskan! ⭐⭐";
+                msgEl.innerText = "Bagus sekali! Kamu sudah memahami sebagian besar konsep dengan baik. Tingkatkan lagi kepelitianmu!";
+            } else {
+                iconEl.className = "fa-solid fa-heart-pulse text-indigo-500";
+                titleEl.innerText = "Tetap Semangat Belajar! ⭐";
+                msgEl.innerText = "Jangan berkecil hati! Periksa kembali pembahasan pada soal yang salah untuk memperkuat pemahamanmu.";
+            }
+
+            document.getElementById('results-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('results-modal').classList.add('hidden');
+        }
+
+        // Reset Quiz Storage & Progress
+        function confirmResetQuiz() {
+            if (confirm("Apakah kamu yakin ingin mengulang kuis dari awal? Semua jawaban tersimpan akan dihapus.")) {
+                resetQuiz();
+            }
+        }
+
+        function resetQuiz() {
+            localStorage.removeItem(STORAGE_KEY_ANSWERS);
+            localStorage.removeItem(STORAGE_KEY_CURRENT);
+            userAnswers = {};
+            currentIdx = 0;
+            closeModal();
+            initApp();
+        }
+
+        // Run on load
+        window.onload = initApp;
+    </script>
+</body>
+</html>
